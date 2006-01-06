@@ -1,3 +1,6 @@
+<?xml version="1.0"?>
+
+<!--
 /*
  * $RCSfile$
  *
@@ -41,58 +44,26 @@
  * $Date$
  * $State$
  */
+ -->
 
-// A GLSL fragment program for handling 1 directional light with specular.
-// This implements per-pixel lighting (Phong shading)
+<project basedir="." default="compile">
+    <target name="compile">
+        <javac
+            destdir="." srcdir="."
+            source="1.4" target="1.4"
+	    debug="true" deprecation="true">
+        </javac>
+    </target>
 
-void directionalLight0(
-    in    vec3 normal,
-    inout vec4 ambient,
-    inout vec4 diffuse,
-    inout vec4 specular)
-{
-    // Normalized light direction and half vector
-    vec3 lightDirection = normalize(vec3(gl_LightSource[0].position));
-    vec3 halfVector = normalize(vec3(gl_LightSource[0].halfVector));
+    <target name="all" depends="compile">
+    </target>
 
-    float nDotVP; // normal . light_direction
-    float nDotHV; // normal . light_half_vector
-    float pf; // power factor
+    <target description="Clean all build products." name="clean">
+        <delete>
+            <fileset dir=".">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+    </target>
 
-    nDotVP = max(0.0, dot(normal, lightDirection));
-    nDotHV = max(0.0, dot(normal, halfVector));
-
-    if (nDotVP == 0.0) {
-	pf = 0.0;
-    }
-    else {
-	pf = pow(nDotHV, gl_FrontMaterial.shininess);
-    }
-
-    ambient += gl_LightSource[0].ambient;
-    diffuse += gl_LightSource[0].diffuse * nDotVP;
-    specular += gl_LightSource[0].specular * pf;
-}
-
-
-// Per-pixel normal (input from vertex shader)
-varying vec3  Normal;
-
-void main()
-{
-    vec3 unitNorm = normalize(Normal);
-    vec4 amb = vec4(0.0);
-    vec4 diff = vec4(0.0);
-    vec4 spec = vec4(0.0);
-    int i;
-
-    directionalLight0(unitNorm, amb, diff, spec);
-
-    // Apply the result of the lighting equation
-    vec4 secondaryColor = vec4(vec3(spec * gl_FrontMaterial.specular), 1.0);
-    vec4 color = vec4(vec3(gl_FrontLightModelProduct.sceneColor +
-		       amb * gl_FrontMaterial.ambient +
-		       diff * gl_FrontMaterial.diffuse), 1.0);
-
-    gl_FragColor = color + secondaryColor;
-}
+</project>
